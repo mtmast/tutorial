@@ -6,25 +6,33 @@ namespace MyApp
     {
         static void Main(string[] args)
         {
-            int diamondLenght = 11;
-            int i, y;
-             for( i = 0; i <= diamondLenght; i++)
-             {
-                if (i <= (diamondLenght / 2))
+            int i, j, r= 6; // r = 6 is the half of diamondLength
+            for (i = 0; i <= r; i++)
+            {
+                for (j = 1; j <= r - i; j++)
                 {
-                    for ( y = 0; y <= diamondLenght; y++)
-                    { 
-                        
-                        Console.Write("*");
-                    }    
-                    Console.WriteLine();
+                    Console.Write(" ");
                 }
-                else
+                for (j = 1; j <= 2 * i - 1; j++)
                 {
-                   
-                }  
+                    Console.Write("*");
+                }
+                Console.Write("\n"); 
+            }
 
-             } 
+           
+            for (i = r - 1; i >= 1; i--)
+            {
+                for (j = 1; j <= r - i; j++)
+                {
+                    Console.Write(" ");
+                }
+                for (j = 1; j <= 2 * i - 1; j++)
+                {
+                    Console.Write("*");
+                }
+                Console.Write("\n");
+            }
         }
     }
 }
