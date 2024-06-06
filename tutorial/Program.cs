@@ -1,38 +1,41 @@
 ﻿using System;
 
-namespace MyApp
+namespace DiamondShape
 {
     internal class Program
     {
+        public static void GenerateDiamondShape(int diamondLength)
+        {
+            int outerLoop, innerLoop;
+            for (outerLoop = 1; outerLoop <= (diamondLength / 2); outerLoop++)
+            {
+                for (innerLoop = 1; innerLoop <= (diamondLength / 2) - outerLoop; innerLoop++)
+                {
+                    Console.Write(" ");
+                }
+                for (innerLoop = 1; innerLoop <= (2 * outerLoop) - 1; innerLoop++)
+                {
+                    Console.Write("*");
+                }
+                Console.WriteLine();
+            }
+            for (outerLoop = (diamondLength / 2) - 1; outerLoop >= 1; outerLoop--)
+            {
+                for (innerLoop = 1; innerLoop <= (diamondLength / 2) - outerLoop; innerLoop++)
+                {
+                    Console.Write(" ");
+                }
+                for (innerLoop = 1; innerLoop <= (2 * outerLoop) - 1; innerLoop++)
+                {
+                    Console.Write("*");
+                }
+                Console.WriteLine();
+            }
+        }
         static void Main(string[] args)
         {
-            int i, j, r= 6; // r = 6 is the half of diamondLength
-            for (i = 0; i <= r; i++)
-            {
-                for (j = 1; j <= r - i; j++)
-                {
-                    Console.Write(" ");
-                }
-                for (j = 1; j <= 2 * i - 1; j++)
-                {
-                    Console.Write("*");
-                }
-                Console.Write("\n"); 
-            }
-
-           
-            for (i = r - 1; i >= 1; i--)
-            {
-                for (j = 1; j <= r - i; j++)
-                {
-                    Console.Write(" ");
-                }
-                for (j = 1; j <= 2 * i - 1; j++)
-                {
-                    Console.Write("*");
-                }
-                Console.Write("\n");
-            }
+            int diamondLength = 11;
+            GenerateDiamondShape(diamondLength);
         }
     }
 }
