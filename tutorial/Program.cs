@@ -33,8 +33,7 @@ namespace MyApp
                 case 'm': result = firstNum * secondNum;
                     opr = '*';
                     break;
-                case 'd': result = firstNum / secondNum;
-                    opr = '/';
+                case 'd': 
                     if (secondNum != 0)
                     {
                         result = firstNum / secondNum;
