@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DiamondShape
+﻿namespace DiamondShape
 {
     internal class Program
     {
@@ -34,7 +32,7 @@ namespace DiamondShape
         }
         static void Main(string[] args)
         {
-            int diamondLength = 11;
+            int diamondLength = 13;
             GenerateDiamondShape(diamondLength);
         }
     }
