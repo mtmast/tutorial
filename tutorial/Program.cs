@@ -1,21 +1,11 @@
-﻿using System;
-
-namespace MyApp
+﻿namespace MyApp
 {
     internal class Program
     {
-        public static void getCenturyAndLeapYear(int year)
+        public static void GetCenturyAndLeapYear(int year)
         {
-            int leap, century;
-            if (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0))
-            {
-                leap = 1;
-            }
-            else
-            {
-                leap = -1;
-            }
-            century = (year / 100) + 1;
+            int leap = ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0) ? 1 : -1;
+            int century = (year >= 1000 ) ?  (year / 100) + 1 : -1;
             Console.WriteLine("Output : "+ century +", "+ leap );
         }
         static void Main(string[] args)
@@ -23,7 +13,7 @@ namespace MyApp
             int year;
             Console.Write("Input Year : ");
             year = Convert.ToInt32(Console.ReadLine());
-            getCenturyAndLeapYear(year);
+            GetCenturyAndLeapYear(year);
         }
     }
 }
