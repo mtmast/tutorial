@@ -46,7 +46,7 @@
                     result = 0;
                     break;
             }     
-            Console.WriteLine(correctInput ?"Your result :" + firstNum + " " + opr + " " + secondNum + " = " + Math.Round(result, 2) + "" : string.Empty);
+            Console.WriteLine(correctInput ? $"Your result : {firstNum} {opr} {secondNum} = {Math.Round(result, 2)}" : string.Empty);
         }
     }
 }
