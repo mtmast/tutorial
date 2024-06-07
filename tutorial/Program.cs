@@ -1,27 +1,24 @@
-﻿using System;
-
-namespace MyApp
+﻿namespace MyApp
 {
     internal class Program
     {
-
         static void Main(string[] args)
         {
-            int firstNum, secondNum, result;
-            char opr;
+            bool correctInput;
+            decimal  result;
             Console.WriteLine("Type a number, and then press Enter");
-            firstNum = Convert.ToInt32(Console.ReadLine());
+            correctInput = decimal.TryParse(Console.ReadLine(), out decimal firstNum);
+            Console.WriteLine( !correctInput ? "You input data is incorrect, But i insert 0 for you" : string.Empty);
             Console.WriteLine("Type a number, and then press Enter");
-            secondNum = Convert.ToInt32(Console.ReadLine());
-
+            correctInput = decimal.TryParse(Console.ReadLine(), out decimal secondNum);
+            Console.WriteLine(!correctInput ? "You input data is incorrect, But i insert 0 for you" : string.Empty);
             Console.WriteLine("Choose an option from an following list :" +
                 " \n a - Add " +
                 " \n s - Substract" +
                 " \n m - Multiply" +
                 " \n d - Divide");
             Console.Write("Your option? ");
-            opr = Convert.ToChar(Console.ReadLine()[0]); 
-
+            correctInput = char.TryParse(Console.ReadLine(), out char opr);
             switch (opr)
             {
                 case 'a': result = firstNum + secondNum;
@@ -48,10 +45,8 @@ namespace MyApp
                 default : Console.WriteLine("Sorry, Your Option is not correct");
                     result = 0;
                     break;
-            }
-
-            Console.WriteLine("Your result :" + firstNum + " " + opr + " " + secondNum + " = " + result +""); 
-
+            }     
+            Console.WriteLine(correctInput ?"Your result :" + firstNum + " " + opr + " " + secondNum + " = " + Math.Round(result, 2) + "" : string.Empty);
         }
     }
 }
