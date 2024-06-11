@@ -1,0 +1,45 @@
+﻿@model IEnumerable<AuthCookie.Models.Cat>
+
+@{
+    ViewData["Title"] = "Cat Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>From My Pet Store </p>
+
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Id)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cat in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => cat.Id)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => cat.Name)
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@cat.Id">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@cat.Id">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@cat.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
