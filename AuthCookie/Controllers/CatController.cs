@@ -3,6 +3,7 @@ using AuthCookie.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace AuthCookie.Controllers
@@ -23,15 +24,28 @@ namespace AuthCookie.Controllers
                             Name = Cat.Name,
                         }).ToList();
             }
-
             Cats.ForEach(i => Debug.Write("{0}\t", i.Name));
             return View(Cats);
         }
 
         // GET: CatController/Details/5
-        public ActionResult Details(int id)
+        public async Task<IActionResult> Details(int? id)
         {
-            return View();
+            if (id == null)
+            {
+                return NotFound();
+            }
+            Cat? cat;
+            using(DBContext context = new DBContext())
+            {
+                cat = await context.Cats.FirstOrDefaultAsync(c => c.Id == id);
+            }
+           
+            if (cat == null)
+            {
+                return NotFound();
+            }
+            return View(cat);
         }
 
         // GET: CatController/Create
@@ -49,52 +63,95 @@ namespace AuthCookie.Controllers
                 {
                     context.Add(cat);
                     await context.SaveChangesAsync();
-                    TempData["successMessage"] = "Created Dog Id and Name Successfully";
+                    TempData["successMessage"] = "Created Successfully";
                     return RedirectToAction(nameof(Index));
                 }
         }
 
 
         // GET: CatController/Edit/5
-        public ActionResult Edit(int id)
+        public ActionResult Edit(int? id)
         {
-            return View();
+            if (id == null)
+            {
+                return NotFound();
+            }
+            Cat? cat;
+            using (var context = new DBContext())
+            {
+               cat = (from Cat in context.Cats
+                        where Cat.Id == id
+                        select new Cat
+                        {
+                            Id = Cat.Id,
+                            Name = Cat.Name,
+                        }).FirstOrDefault();
+            }
+            if(cat == null)
+            {
+                return NotFound();
+            }
+            return View(cat);
         }
 
         // POST: CatController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(int id, [Bind("Id,Name")] Cat cat)
         {
-            try
+            if (id != cat.Id)
             {
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
-            catch
+            if (ModelState.IsValid)
             {
-                return View();
+                try
+                {
+                    using (var context = new DBContext())
+                    {
+                        context.Update(cat);
+                        await context.SaveChangesAsync();
+                        TempData["successMessage"] = "Updated Successfully";
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!CatExists(cat.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
             }
+            return View(cat);
         }
 
         // GET: CatController/Delete/5
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            return View();
+            Cat? cat;
+            using (DBContext context = new DBContext()) 
+            {
+                cat = await context.Cats.FindAsync(id);
+                if (cat != null)
+                {
+                    context.Cats.Remove(cat);
+                }
+                await context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
         }
 
-        // POST: CatController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        private bool CatExists(int id)
         {
-            try
+            using(DBContext context = new DBContext())
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+                return context.Cats.Any(e => e.Id == id);
+            }   
         }
     }
 }

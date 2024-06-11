@@ -24,8 +24,10 @@ public partial class DBContext : DbContext
         {
             entity.ToTable("cats");
 
+
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+            .ValueGeneratedOnAdd()
+            .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.Name)
                 .IsRequired()

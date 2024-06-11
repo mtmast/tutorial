@@ -11,8 +11,8 @@
     <p>
         <a asp-action="Create">Create New</a>
     </p>
-    <table class="table">
-        <thead>
+    <table class="table table-striped">
+        <thead class="thead-dark">
             <tr>
                 <th>
                     @Html.DisplayNameFor(model => model.Id)
@@ -34,9 +34,18 @@
                         @Html.DisplayFor(modelItem => cat.Name)
                     </td>
                     <td>
-                        <a asp-action="Edit" asp-route-id="@cat.Id">Edit</a> |
-                        <a asp-action="Details" asp-route-id="@cat.Id">Details</a> |
-                        <a asp-action="Delete" asp-route-id="@cat.Id">Delete</a>
+                        <a asp-action="Edit" asp-route-id="@cat.Id" class="btn btn-small btn-success" >
+                            <img src="~/img/edit.svg" alt="Edit Image" class="icon_img" />
+                            Edit
+                        </a> |
+                        <a asp-action="Details" asp-route-id="@cat.Id" class="btn btn-small btn-primary">
+                            <img src="~/img/detail.svg" alt="Detail Image" class="icon_img" />
+                            Detail
+                        </a> |
+                        <a asp-action="Delete" asp-route-id="@cat.Id" class="btn btn-small btn-danger">
+                            <img src="~/img/delete.svg" alt="Delete Image" class="icon_img" />
+                            Delete
+                        </a>
                     </td>
                 </tr>
             }
