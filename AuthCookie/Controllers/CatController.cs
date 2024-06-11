@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace AuthCookie.Controllers
 {
     [Authorize]
@@ -63,8 +62,9 @@ namespace AuthCookie.Controllers
                 {
                     context.Add(cat);
                     await context.SaveChangesAsync();
-                    TempData["successMessage"] = "Created Successfully";
-                    return RedirectToAction(nameof(Index));
+                    TempData["MessageType"] = "success";
+                    TempData["Message"] = "Created Successfully"; 
+                return RedirectToAction(nameof(Index));
                 }
         }
 
@@ -110,7 +110,8 @@ namespace AuthCookie.Controllers
                     {
                         context.Update(cat);
                         await context.SaveChangesAsync();
-                        TempData["successMessage"] = "Updated Successfully";
+                        TempData["MessageType"] = "success";
+                        TempData["Message"] = "Updated Successfully";
                         return RedirectToAction(nameof(Index));
                     }
                 }
@@ -122,6 +123,8 @@ namespace AuthCookie.Controllers
                     }
                     else
                     {
+                        TempData["MessageType"] = "fail";
+                        TempData["Message"] = "Updated Fail";
                         return RedirectToAction(nameof(Index));
                     }
                 }
@@ -142,6 +145,8 @@ namespace AuthCookie.Controllers
                 }
                 await context.SaveChangesAsync();
             }
+            TempData["MessageType"] = "delete";
+            TempData["Message"] = "Deteted Successfully";
             return RedirectToAction(nameof(Index));
         }
 
