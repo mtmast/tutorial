@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using System.Security.Claims;
 
 namespace AuthCookie.Controllers

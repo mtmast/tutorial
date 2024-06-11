@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using AuthCookie.Models;
 using Microsoft.AspNetCore.Authorization;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,12 +34,13 @@ namespace AuthCookie.Controllers
             {
                 return NotFound();
             }
+
             Cat? cat;
             using(DBContext context = new DBContext())
             {
                 cat = await context.Cats.FirstOrDefaultAsync(c => c.Id == id);
             }
-           
+
             if (cat == null)
             {
                 return NotFound();
@@ -67,7 +67,6 @@ namespace AuthCookie.Controllers
                     return RedirectToAction(nameof(Index));
                 }
         }
-
 
         // GET: CatController/Edit/5
         public ActionResult Edit(int? id)
@@ -107,7 +106,7 @@ namespace AuthCookie.Controllers
             {
                 try
                 {
-                    using (var context = new DBContext())
+                    using (DBContext context = new DBContext())
                     {
                         context.Update(cat);
                         await context.SaveChangesAsync();
