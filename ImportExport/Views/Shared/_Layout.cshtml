@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ImportExport.styles.css" asp-append-version="true" />
      <link href="~/lib/datatable/datatable.min.css" rel="stylesheet" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
 </head>
 <body>
     <header>
@@ -53,5 +55,25 @@
      <script src="~/lib/datatable/datatable.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+   
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            toastr.options = {
+                "positionClass": "toast-top-center",
+            }
+            let message = '@TempData["Message"]';
+            console.log("message", '@TempData["Message"]')
+            console.log("message type", '@TempData["MessageType"]')
+            switch ('@TempData["MessageType"]') {
+                case 'success': toastr.success(message); break;
+                case 'fail': toastr.error(message); break;
+                case 'delete': toastr.success(message); break;
+                default: break;
+            }
+        });
+    </script>
 </body>
 </html>
