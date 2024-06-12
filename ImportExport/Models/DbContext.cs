@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ImportExport.Models;
 
-public partial class DbContext : DbContext
+public partial class DBContext : DbContext
 {
-    public DbContext() { };
-    public DbContext(DbContextOptions<DbContext> options)
+    public DBContext() { }
+    public DBContext(DbContextOptions<DbContext> options)
         : base(options)
     {
     }
