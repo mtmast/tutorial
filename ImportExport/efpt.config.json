@@ -1,6 +1,6 @@
 ﻿{
    "CodeGenerationMode": 4,
-   "ContextClassName": "DbContext",
+   "ContextClassName": "DBContext",
    "ContextNamespace": null,
    "FilterSchemas": false,
    "IncludeConnectionString": false,
@@ -27,7 +27,7 @@
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[vw_customer_movie_rented]",
+         "Name": "[dbo].[vw_cus_mv_rent]",
          "ObjectType": 3
       }
    ],

@@ -5,10 +5,8 @@ using System.Collections.Generic;
 
 namespace ImportExport.Models;
 
-public partial class VwCustomerMovieRented
+public partial class VwCusMvRent
 {
-    public int RentId { get; set; }
-
     public string FullName { get; set; }
 
     public string Address { get; set; }
@@ -16,4 +14,6 @@ public partial class VwCustomerMovieRented
     public string Title { get; set; }
 
     public string Salutation { get; set; }
+
+    public int RentId { get; set; }
 }

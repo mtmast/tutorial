@@ -8,8 +8,8 @@ namespace ImportExport.Models;
 
 public partial class DBContext : DbContext
 {
-    public DBContext() { }
-    public DBContext(DbContextOptions<DbContext> options)
+    public  DBContext() { }
+    public DBContext(DbContextOptions<DBContext> options)
         : base(options)
     {
     }
@@ -20,7 +20,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<TblRent> TblRents { get; set; }
 
-    public virtual DbSet<VwCustomerMovieRented> VwCustomerMovieRenteds { get; set; }
+    public virtual DbSet<VwCusMvRent> VwCusMvRents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,11 +81,11 @@ public partial class DBContext : DbContext
                 .HasConstraintName("FK_tbl_movie_tbl_rent");
         });
 
-        modelBuilder.Entity<VwCustomerMovieRented>(entity =>
+        modelBuilder.Entity<VwCusMvRent>(entity =>
         {
             entity
                 .HasNoKey()
-                .ToView("vw_customer_movie_rented");
+                .ToView("vw_cus_mv_rent");
 
             entity.Property(e => e.Address)
                 .HasMaxLength(150)
@@ -104,9 +104,7 @@ public partial class DBContext : DbContext
                 .IsUnicode(false);
         });
 
-       
-
-    OnModelCreatingPartial(modelBuilder);
+        OnModelCreatingPartial(modelBuilder);
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

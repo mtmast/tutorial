@@ -57,6 +57,7 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="~/lib/sweet-alert2/sweetalert2.min.js"></script>
    
 
     <script type="text/javascript">
@@ -70,6 +71,7 @@
             switch ('@TempData["MessageType"]') {
                 case 'success': toastr.success(message); break;
                 case 'fail': toastr.error(message); break;
+                case 'info': toastr.info(message); break;
                 case 'delete': toastr.success(message); break;
                 default: break;
             }
