@@ -1,16 +1,9 @@
 ﻿using ImportExport.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
 using OfficeOpenXml.Style;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Text;
 
 namespace ImportExport.Controllers
