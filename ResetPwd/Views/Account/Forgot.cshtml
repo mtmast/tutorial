@@ -1,0 +1,30 @@
+﻿﻿@{
+    ViewBag.Title = "Login";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card mt-5">
+                <h4 class="card-header text-secondary text-center">
+                    -- FORGOT PASSWORD --
+                </h4>
+                <div class="card-body">
+                    <form asp-action="Login" method="post">
+                        @if (ViewBag.Error != null)
+                        {
+                            <p class="text-danger">@ViewBag.Error</p>
+                        }
+                        <div class="form-group mb-2">
+                            <label for="email">Email address</label>
+                            <input type="email" class="form-control" id="email" placeholder="Enter email">
+                        </div>
+                        <div class="form-group mb-2">
+                            <button type="submit" class="btn btn-primary btn-block w-100">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
