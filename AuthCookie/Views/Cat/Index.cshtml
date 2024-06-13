@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Cat Page";
+    int index = 1;
 }
 
 <div class="text-center">
@@ -22,13 +23,13 @@
                 </th>
                 <th></th>
             </tr>
-        </thead>
+        </thead>    
         <tbody>
             @foreach (var cat in Model)
             {
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => cat.Id)
+                        @(index)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => cat.Name)
@@ -42,13 +43,34 @@
                             <img src="~/img/detail.svg" alt="Detail Image" class="icon_img" />
                             Detail
                         </a> |
-                        <a asp-action="Delete" asp-route-id="@cat.Id" class="btn btn-small btn-danger">
+                        <a  class="btn btn-small btn-danger" href="javascript:void(0);" onclick="confirmDelete('@Url.Action("Delete", new { id = cat.Id })');">
                             <img src="~/img/delete.svg" alt="Delete Image" class="icon_img" />
                             Delete
                         </a>
                     </td>
                 </tr>
+                index++;
             }
         </tbody>
     </table>
 </div>
+@section Scripts {
+    <script>
+        function confirmDelete(url) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to recover this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+    </script>
+}
+

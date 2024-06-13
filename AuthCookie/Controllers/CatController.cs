@@ -58,14 +58,25 @@ namespace AuthCookie.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create([Bind("Name")] Cat cat)
         {
+            if (string.IsNullOrWhiteSpace(cat.Name))
+            {
+                ModelState.AddModelError("Name", "Please Fill Name");
+                return View();
+            }
+
+            if (ModelState.IsValid)
+            {
                 using (var context = new DBContext())
                 {
                     context.Add(cat);
                     await context.SaveChangesAsync();
                     TempData["MessageType"] = "success";
-                    TempData["Message"] = "Created Successfully"; 
-                return RedirectToAction(nameof(Index));
+                    TempData["Message"] = "Created Successfully";
+                    return RedirectToAction(nameof(Index));
                 }
+            }
+                        
+            return View();
         }
 
         // GET: CatController/Edit/5
@@ -98,9 +109,15 @@ namespace AuthCookie.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(int id, [Bind("Id,Name")] Cat cat)
         {
+            if (string.IsNullOrWhiteSpace(cat.Name))
+            {
+                ModelState.AddModelError("Name", "Please Fill Name");
+                return View();
+            }
             if (id != cat.Id)
             {
-                return NotFound();
+                ModelState.AddModelError("Name", "Your Name is Not in Our System");
+                return View();
             }
             if (ModelState.IsValid)
             {
