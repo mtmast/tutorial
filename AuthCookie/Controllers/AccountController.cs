@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using System.Security.Claims;
 
 namespace AuthCookie.Controllers
@@ -11,8 +10,14 @@ namespace AuthCookie.Controllers
         public ActionResult Login()
         {
             if (User.Identity != null && User.Identity.IsAuthenticated) return RedirectToAction("Index", "Home");
-            Response.Cookies.Append("Email", "test@gmail.com");
-            Response.Cookies.Append("Password", "123");
+
+            var cookieOptions = new CookieOptions
+            {
+                Expires = DateTime.Now.AddMinutes(30) // Set the cookie to expire in 30 minutes
+            };
+
+            Response.Cookies.Append("Email", "test@gmail.com", cookieOptions);
+            Response.Cookies.Append("Password", "123", cookieOptions);
             return View();
         }
 
@@ -31,7 +36,8 @@ namespace AuthCookie.Controllers
                 var ClaimsIdentity = new ClaimsIdentity(Claims, "CookieAuth");
                 var AuthProperties = new AuthenticationProperties
                 {
-                    IsPersistent = true
+                    IsPersistent = true,
+                    ExpiresUtc = DateTime.UtcNow.AddMinutes(30)
                 };
                 await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(ClaimsIdentity), AuthProperties);
                 return RedirectToAction("Index", "Home");
