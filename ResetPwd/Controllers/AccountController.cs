@@ -1,11 +1,19 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿
+using EmailService.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using ResetPwd.Models;
+using System.Diagnostics;
 using System.Security.Claims;
 
 namespace ResetPwd.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly IMailService mailService;
+        public AccountController(IMailService MailService) { 
+            mailService = MailService;
+        }
         // GET: AccountController
         public ActionResult Login()
         {
@@ -16,8 +24,12 @@ namespace ResetPwd.Controllers
                 Expires = DateTime.Now.AddMinutes(30) // Set the cookie to expire in 30 minutes
             };
 
-            Response.Cookies.Append("Email", "test@gmail.com", cookieOptions);
-            Response.Cookies.Append("Password", "123", cookieOptions);
+            if (string.IsNullOrEmpty(Request.Cookies["email"]))
+            {
+                Response.Cookies.Append("Email", "test@gmail.com", cookieOptions);
+                Response.Cookies.Append("Password", "123", cookieOptions);
+            }
+
             return View();
         }
 
@@ -25,32 +37,159 @@ namespace ResetPwd.Controllers
         [HttpPost]
         public async Task<ActionResult> Login(String Email, String password)
         {
-            string CookieEmail = Request.Cookies["Email"] ?? String.Empty;
-            string CookiePassword = Request.Cookies["Password"] ?? String.Empty;
-            if (Email == CookieEmail && password == CookiePassword)
+            if (ModelState.IsValid)
             {
-                List<Claim> Claims = new List<Claim>
+                if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(password))
+                {
+                    ViewBag.Error = "Please Fill Data";
+                    return View();
+                }
+
+                string CookieEmail = Request.Cookies["Email"] ?? String.Empty;
+                string CookiePassword = Request.Cookies["Password"] ?? String.Empty;
+                if (Email == CookieEmail && password == CookiePassword)
+                {
+                    List<Claim> Claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, Email)
                 };
-                var ClaimsIdentity = new ClaimsIdentity(Claims, "CookieAuth");
-                var AuthProperties = new AuthenticationProperties
-                {
-                    IsPersistent = true,
-                    ExpiresUtc = DateTime.UtcNow.AddMinutes(30)
-                };
-                await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(ClaimsIdentity), AuthProperties);
-                return RedirectToAction("Index", "Home");
+                    var ClaimsIdentity = new ClaimsIdentity(Claims, "CookieAuth");
+                    var AuthProperties = new AuthenticationProperties
+                    {
+                        IsPersistent = true,
+                        ExpiresUtc = DateTime.UtcNow.AddMinutes(30)
+                    };
+                    await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(ClaimsIdentity), AuthProperties);
+                    return RedirectToAction("Index", "Home");
+                }
+                ViewBag.Error = "Invalid Email or password";
+                return View();
             }
-            ViewBag.Error = "Invalid Email or password";
+            else
+            {
+                ViewBag.Error = "Please Fill Data";
+                return View();
+            }
+
+        }
+
+        // GET: AccountController/Forgot
+        public ActionResult Forgot()
+        {
+            if (User.Identity != null && User.Identity.IsAuthenticated) return RedirectToAction("Index", "Home");
             return View();
+        }
+
+        // POST: AccountController/Forgot -- SendEmail
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Forgot(string resetemail)
+        {
+            Random rdn = new Random();
+            int RandomNumber = rdn.Next(1, 999);
+            string resetToken = RandomNumber.ToString() + DateTime.Now.Day.ToString();
+            DateTime expiryTime = DateTime.Now.AddMinutes(3);
+
+            if (ModelState.IsValid)
+            {
+                if (string.IsNullOrEmpty(resetemail))
+                {
+                    ViewBag.Error = "Please Fill Data -";
+                    return View();
+                }
+
+                if (Request.Cookies["Email"] != resetemail)
+                {
+                    ViewBag.Error = "Sorry, Your Email does not register";
+                    return View();
+                }
+
+                HTMLMailData mailData = new HTMLMailData
+                {
+                    EmailToId = resetemail,
+                    EmailToName = "Aung Si Thu",
+                };
+
+                bool condition = mailService.SendHTMLMail(mailData, resetToken, expiryTime);
+                TempData["MessageType"] = "info";
+                TempData["Message"] = "Please Check Your Email";
+                TempData["Status"] = 1;
+                return View();
+            }
+            else
+            {
+                ViewBag.Error = "Please Fill Data";
+                return View();
+            }
+        }
+
+        // GET: AccountController/Reset
+        public ActionResult Reset(string token, DateTime expiry)
+        {
+            if (User.Identity != null && User.Identity.IsAuthenticated) return RedirectToAction("Index", "Home");
+            if (string.IsNullOrEmpty(token))
+            {
+                TempData["MessageType"] = "fail";
+                TempData["Message"] = "Only Reset By Forget Password";
+                return RedirectToAction("Login");
+            }
+            if (DateTime.Now > expiry)
+            {
+                TempData["MessageType"] = "fail";
+                TempData["Message"] = "The reset link has expired. Please request a new one.";
+                return RedirectToAction("Forgot");
+            }
+
+            var model = new ResetPasswordViewModel
+            {
+                Token = token,
+                Expiry = expiry
+            };
+            return View(model);
+        }
+
+        // Reset Password
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Reset(String NewPassword, String ConfirmPassword, ResetPasswordViewModel model)
+        {
+            if (DateTime.Now > model.Expiry)
+            {
+                TempData["MessageType"] = "fail";
+                TempData["Message"] = "The reset link has expired. Please request a new one.";
+                return RedirectToAction("Forgot");
+            }
+            if (ModelState.IsValid)
+            {
+                if (string.IsNullOrEmpty(NewPassword) || string.IsNullOrEmpty(ConfirmPassword))
+                {
+                    Debug.Write($"New Password - {NewPassword} and ConfirmPassword {ConfirmPassword}");
+                    ViewBag.Error = "Please Fill Data";
+                    return View(model);
+                }
+
+                if (NewPassword != ConfirmPassword)
+                {
+                    ViewBag.Error = "Your Password does not match";
+                    return View(model);
+                }
+
+                Response.Cookies.Append("Password", NewPassword);
+                TempData["MessageType"] = "success";
+                TempData["Message"] = "Password Updated !";
+                return RedirectToAction(nameof(Login));
+            }
+            else
+            {
+                ViewBag.Error = "Please Fill Data";
+                return View(model);
+            }
+
         }
 
         // GET: AccountController/Logout
         public async Task<ActionResult> Logout()
         {
-            Response.Cookies.Delete("Email");
-            Response.Cookies.Delete("Password");
             await HttpContext.SignOutAsync("CookieAuth");
             return RedirectToAction("Login", "Account");
         }

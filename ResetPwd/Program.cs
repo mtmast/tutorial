@@ -1,3 +1,6 @@
+using EmailService.Configuration;
+using EmailService.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,6 +11,8 @@ builder.Services.AddAuthentication("CookieAuth")
         options.LoginPath = "/Account/Login";
     });
 
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+builder.Services.AddTransient<IMailService, MailService>();
 
 var app = builder.Build();
 

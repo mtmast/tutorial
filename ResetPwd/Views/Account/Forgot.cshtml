@@ -10,17 +10,18 @@
                     -- FORGOT PASSWORD --
                 </h4>
                 <div class="card-body">
-                    <form asp-action="Login" method="post">
+                    <form asp-action="Forgot" method="post">
                         @if (ViewBag.Error != null)
                         {
                             <p class="text-danger">@ViewBag.Error</p>
                         }
                         <div class="form-group mb-2">
                             <label for="email">Email address</label>
-                            <input type="email" class="form-control" id="email" placeholder="Enter email">
+                            <input type="email" class="form-control" id="reset-email" name="resetemail" asp-validation-for="reset-email" placeholder="Enter email">
                         </div>
-                        <div class="form-group mb-2">
-                            <button type="submit" class="btn btn-primary btn-block w-100">Login</button>
+                        <div class="form-group text-center mb-2">
+                            <button type="submit" class="btn btn-primary btn-block ">Send</button>
+                            <a asp-action="Login" class="btn btn-secondary btn-block ">Cancel</a>
                         </div>
                     </form>
                 </div>
@@ -28,3 +29,5 @@
         </div>
     </div>
 </div>
+
+

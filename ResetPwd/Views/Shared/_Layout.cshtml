@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ResetPwd.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
 </head>
 <body>
     <header>
@@ -53,9 +55,26 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
-
+    <script type="text/javascript">
+        $(document).ready(function () {
+            toastr.options = {
+                "positionClass": "toast-top-center",
+            }
+            let message = '@TempData["Message"]';
+            console.log("message", '@TempData["Message"]')
+            console.log("message type", '@TempData["MessageType"]')
+            switch ('@TempData["MessageType"]') {
+                case 'success': toastr.success(message); break;
+                case 'fail': toastr.error(message); break;
+                case 'info': toastr.info(message); break;
+                case 'delete': toastr.success(message); break;
+                default: break;
+            }
+        });
+    </script>
    
 </body>
 </html>

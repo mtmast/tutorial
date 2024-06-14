@@ -1,4 +1,5 @@
-﻿﻿@{
+﻿@model ResetPasswordViewModel﻿
+@{
     ViewBag.Title = "Login";
 }
 
@@ -10,25 +11,76 @@
                     -- RESET PASSWORD --
                 </h4>
                 <div class="card-body">
-                    <form asp-action="Login" method="post">
+                    <form asp-action="Reset" method="post">
                         @if (ViewBag.Error != null)
                         {
                             <p class="text-danger">@ViewBag.Error</p>
                         }
+                        <input type="hidden" asp-for="Token"/>
+                        <input type="hidden" asp-for="Expiry" />
                         <div class="form-group mb-2">
                             <label for="password">New Password</label>
-                            <input type="password" class="form-control" id="new-password" placeholder="Password">
+                            <input type="password" class="form-control" id="new-password" name="NewPassword" placeholder="Password">
                         </div>
                         <div class="form-group mb-4">
                             <label for="password">Comfirm Password</label>
-                            <input type="password" class="form-control" id="comfirm-password" placeholder="Password">
+                            <input type="password" class="form-control" id="comfirm-password" name="ConfirmPassword" placeholder="Password">
                         </div>
-                        <div class="form-group mb-2">
+                        <div class="form-group mb-4">
                             <button type="submit" class="btn btn-primary btn-block w-100">Reset</button>
                         </div>
+                        <div class="text-primary text-center mb-4">Expirted in <span id="time">00:00</span> minutes!</div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+   
 </div>
+
+@section Scripts {
+    <script>
+        var expiryTime = new Date('@Model.Expiry.ToString("o")');
+        var now = new Date();
+
+        if (now > expiryTime) {
+            alert('The reset link has expired. Please request a new one.');
+            window.location.href = '@Url.Action("Forgot", "Account")';
+        } else {
+            var timeRemaining = (expiryTime - now) / 1000; // Convert milliseconds to seconds
+
+            setTimeout(function () {
+                alert('The reset link has expired. Please request a new one.');
+                window.location.href = '@Url.Action("Forgot", "Account")';
+            }, timeRemaining * 1000);
+
+            function startTimer(duration, display) {
+                var timer = duration, minutes, seconds;
+                var countdown = setInterval(function () {
+                    if (timer <= 0) {
+                        clearInterval(countdown);
+                        alert('The reset link has expired. Please request a new one.');
+                        window.location.href = '@Url.Action("Forgot", "Account")';
+                        return;
+                    }
+
+                    minutes = parseInt(timer / 60, 10);
+                    seconds = parseInt(timer % 60, 10);
+
+                    minutes = minutes < 10 ? "0" + minutes : minutes;
+                    seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                    display.text(minutes + ":" + seconds);
+
+                    timer--;
+                }, 1000);
+            }
+
+            jQuery(function ($) {
+                var display = $('#time');
+                startTimer(timeRemaining, display);
+            });
+        }
+    </script>
+   
+}
