@@ -6,7 +6,7 @@ namespace EmailService.Services
     public interface IMailService
     {
         bool SendMail(MailData mailData);
-        bool SendHTMLMail(HTMLMailData htmlMailData, String token, DateTime expiry);
+        bool SendHTMLMail(HTMLMailData htmlMailData, String token, String resetEmail);
     }
 }
 

@@ -11,6 +11,8 @@ namespace ResetPwd.Controllers
     public class AccountController : Controller
     {
         private readonly IMailService mailService;
+        private static readonly Dictionary<string, DateTime> _tokenExpiry = new();
+        private static readonly Dictionary<string, string> _emailTokens = new();
         public AccountController(IMailService MailService) { 
             mailService = MailService;
         }
@@ -85,10 +87,8 @@ namespace ResetPwd.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Forgot(string resetemail)
         {
-            Random rdn = new Random();
-            int RandomNumber = rdn.Next(1, 999);
-            string resetToken = RandomNumber.ToString() + DateTime.Now.Day.ToString();
-            DateTime expiryTime = DateTime.Now.AddMinutes(3);
+            var token = Guid.NewGuid().ToString();
+            DateTime expiry = DateTime.Now.AddMinutes(3);
 
             if (ModelState.IsValid)
             {
@@ -104,17 +104,32 @@ namespace ResetPwd.Controllers
                     return View();
                 }
 
+                _emailTokens[resetemail] = token;
+                _tokenExpiry[resetemail] = expiry;
+
                 HTMLMailData mailData = new HTMLMailData
                 {
                     EmailToId = resetemail,
                     EmailToName = "Aung Si Thu",
                 };
 
-                bool condition = mailService.SendHTMLMail(mailData, resetToken, expiryTime);
-                TempData["MessageType"] = "info";
-                TempData["Message"] = "Please Check Your Email";
-                TempData["Status"] = 1;
-                return View();
+                bool condition = mailService.SendHTMLMail(mailData, token, resetemail);
+
+                if (condition)
+                {
+                    TempData["MessageType"] = "info";
+                    TempData["Message"] = "Please Check Your Email";
+                    TempData["Status"] = 1;
+                    return View();
+                }
+                else
+                {
+                    TempData["MessageType"] = "fail";
+                    TempData["Message"] = "Sorry, Service is currently not available";
+                    TempData["Status"] = 1;
+                    return View();
+                }
+                
             }
             else
             {
@@ -124,27 +139,28 @@ namespace ResetPwd.Controllers
         }
 
         // GET: AccountController/Reset
-        public ActionResult Reset(string token, DateTime expiry)
+        public ActionResult Reset(string token, string email)
         {
             if (User.Identity != null && User.Identity.IsAuthenticated) return RedirectToAction("Index", "Home");
-            if (string.IsNullOrEmpty(token))
+            if(token == null || email == null)
             {
-                TempData["MessageType"] = "fail";
-                TempData["Message"] = "Only Reset By Forget Password";
-                return RedirectToAction("Login");
+                return RedirectToAction("LinkExpired");
             }
-            if (DateTime.Now > expiry)
+
+            if (!_emailTokens.ContainsKey(email) || _emailTokens[email] != token || _tokenExpiry[email] < DateTime.Now)
             {
-                TempData["MessageType"] = "fail";
-                TempData["Message"] = "The reset link has expired. Please request a new one.";
-                return RedirectToAction("Forgot");
+                return RedirectToAction("LinkExpired");
             }
+
 
             var model = new ResetPasswordViewModel
             {
                 Token = token,
-                Expiry = expiry
+                ResetEmail = email,
+                Expiry = _tokenExpiry[email],
+
             };
+
             return View(model);
         }
 
@@ -153,12 +169,15 @@ namespace ResetPwd.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Reset(String NewPassword, String ConfirmPassword, ResetPasswordViewModel model)
         {
-            if (DateTime.Now > model.Expiry)
+            string ResetEmail = model.ResetEmail ?? string.Empty;
+            string Token = model.Token ?? string.Empty;
+
+            if (!_emailTokens.ContainsKey(ResetEmail) || _emailTokens[ResetEmail] != Token || _tokenExpiry[ResetEmail] < DateTime.Now)
             {
-                TempData["MessageType"] = "fail";
-                TempData["Message"] = "The reset link has expired. Please request a new one.";
-                return RedirectToAction("Forgot");
+                return RedirectToAction("LinkExpired");
             }
+
+
             if (ModelState.IsValid)
             {
                 if (string.IsNullOrEmpty(NewPassword) || string.IsNullOrEmpty(ConfirmPassword))
@@ -175,6 +194,9 @@ namespace ResetPwd.Controllers
                 }
 
                 Response.Cookies.Append("Password", NewPassword);
+                _emailTokens.Remove(ResetEmail);
+                _tokenExpiry.Remove(ResetEmail);
+
                 TempData["MessageType"] = "success";
                 TempData["Message"] = "Password Updated !";
                 return RedirectToAction(nameof(Login));
@@ -185,6 +207,12 @@ namespace ResetPwd.Controllers
                 return View(model);
             }
 
+        }
+
+        // GET : AccountController/LinkExpired
+        public ActionResult LinkExpired()
+        {
+            return View();
         }
 
         // GET: AccountController/Logout

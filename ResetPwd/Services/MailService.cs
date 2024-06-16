@@ -10,10 +10,12 @@ using System.Diagnostics;
 public class MailService : IMailService
 {
     private readonly MailSettings _mailSettings;
+    private readonly IWebHostEnvironment _env;
 
-    public MailService(IOptions<MailSettings> mailSettingsOptions)
+    public MailService(IOptions<MailSettings> mailSettingsOptions, IWebHostEnvironment env)
     {
         _mailSettings = mailSettingsOptions.Value;
+        _env = env;
     }
 
     //Send Normal Email
@@ -49,10 +51,12 @@ public class MailService : IMailService
     }
 
     // Send HTML Email
-    public bool SendHTMLMail(HTMLMailData htmlMailData, String resetToken,DateTime expiryTime )
+    public bool SendHTMLMail(HTMLMailData htmlMailData, String resetToken,String resetEmail)
     {
         try
         {
+            string webRootPath = _env.WebRootPath;
+            string filePath = Path.Combine(webRootPath, "Templates", "ResetEmail.html");
             using (MimeMessage emailMessage = new MimeMessage())
             {
                 MailboxAddress emailFrom = new MailboxAddress(_mailSettings.SenderName, _mailSettings.SenderEmail);
@@ -63,11 +67,13 @@ public class MailService : IMailService
 
                 emailMessage.Subject = "Reset Link";
 
-                string filePath = Directory.GetCurrentDirectory() + "\\Templates\\ResetEmail.html";
+                //string filePath = Directory.GetCurrentDirectory() + "\\Templates\\ResetEmail.html";
                
                 string emailTemplateText = File.ReadAllText(filePath);
-               
-                emailTemplateText = string.Format(emailTemplateText, htmlMailData.EmailToName, DateTime.Today.Date.ToShortDateString(), resetToken, expiryTime);
+               Debug.WriteLine("Email Template Text ==================",emailTemplateText);
+                emailTemplateText = emailTemplateText.Replace("#", "&#35");
+                emailTemplateText = string.Format(emailTemplateText, htmlMailData.EmailToName, DateTime.Today.Date.ToShortDateString(), resetToken, resetEmail);
+                Debug.WriteLine("Email Template Text From OUter==================", emailTemplateText);
                 BodyBuilder emailBodyBuilder = new BodyBuilder();
                 emailBodyBuilder.HtmlBody = emailTemplateText;
                 emailBodyBuilder.TextBody = "Plain Text goes here to avoid marked as spam for some email servers.";
@@ -86,6 +92,7 @@ public class MailService : IMailService
         }
         catch (Exception ex)
         {
+            Debug.WriteLine("Error............ Template Text From OUter==================", ex.Message);
             return false;
         }
     }
