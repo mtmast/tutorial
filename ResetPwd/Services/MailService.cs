@@ -67,13 +67,13 @@ public class MailService : IMailService
 
                 emailMessage.Subject = "Reset Link";
 
-                //string filePath = Directory.GetCurrentDirectory() + "\\Templates\\ResetEmail.html";
                
                 string emailTemplateText = File.ReadAllText(filePath);
-               Debug.WriteLine("Email Template Text ==================",emailTemplateText);
-                emailTemplateText = emailTemplateText.Replace("#", "&#35");
-                emailTemplateText = string.Format(emailTemplateText, htmlMailData.EmailToName, DateTime.Today.Date.ToShortDateString(), resetToken, resetEmail);
-                Debug.WriteLine("Email Template Text From OUter==================", emailTemplateText);
+                emailTemplateText = emailTemplateText.Replace("{0}", htmlMailData.EmailToName);
+                emailTemplateText = emailTemplateText.Replace("{1}", DateTime.Today.Date.ToShortDateString());
+                emailTemplateText = emailTemplateText.Replace("{2}", resetToken);
+                emailTemplateText = emailTemplateText.Replace("{3}", resetEmail);
+
                 BodyBuilder emailBodyBuilder = new BodyBuilder();
                 emailBodyBuilder.HtmlBody = emailTemplateText;
                 emailBodyBuilder.TextBody = "Plain Text goes here to avoid marked as spam for some email servers.";

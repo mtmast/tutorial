@@ -182,7 +182,6 @@ namespace ResetPwd.Controllers
             {
                 if (string.IsNullOrEmpty(NewPassword) || string.IsNullOrEmpty(ConfirmPassword))
                 {
-                    Debug.Write($"New Password - {NewPassword} and ConfirmPassword {ConfirmPassword}");
                     ViewBag.Error = "Please Fill Data";
                     return View(model);
                 }
