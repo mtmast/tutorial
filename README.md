@@ -9,6 +9,7 @@
     **Tutorial 7** >> [Authentication Using Cookie](https://github.com/mtmast/tutorial/tree/tutorial-7) <br> <br>
       **Tutorial 8** >> [Very First CRUD🥵](https://github.com/mtmast/tutorial/tree/tutorial-8) <br> <br>
         **Tutorial 9** >> [File Import And Export👨🏻‍💻](https://github.com/mtmast/tutorial/tree/tutorial-9) <br> <br>
+        **Tutorial 10** >> [Reset Pwd With Email Service📧](https://github.com/mtmast/tutorial/tree/tutorial-9) <br> <br>
  ---
  ---
  
