@@ -10,14 +10,8 @@ namespace AuthCookie.Controllers
         public ActionResult Login()
         {
             if (User.Identity != null && User.Identity.IsAuthenticated) return RedirectToAction("Index", "Home");
-
-            var cookieOptions = new CookieOptions
-            {
-                Expires = DateTime.Now.AddMinutes(30) // Set the cookie to expire in 30 minutes
-            };
-
-            Response.Cookies.Append("Email", "test@gmail.com", cookieOptions);
-            Response.Cookies.Append("Password", "123", cookieOptions);
+            Response.Cookies.Append("Email", "test@gmail.com");
+            Response.Cookies.Append("Password", "123");
             return View();
         }
 
