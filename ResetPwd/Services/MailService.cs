@@ -64,10 +64,7 @@ public class MailService : IMailService
 
                 MailboxAddress emailTo = new MailboxAddress(htmlMailData.EmailToName, htmlMailData.EmailToId);
                 emailMessage.To.Add(emailTo);
-
                 emailMessage.Subject = "Reset Link";
-
-               
                 string emailTemplateText = File.ReadAllText(filePath);
                 emailTemplateText = emailTemplateText.Replace("{0}", htmlMailData.EmailToName);
                 emailTemplateText = emailTemplateText.Replace("{1}", DateTime.Today.Date.ToShortDateString());
@@ -77,9 +74,7 @@ public class MailService : IMailService
                 BodyBuilder emailBodyBuilder = new BodyBuilder();
                 emailBodyBuilder.HtmlBody = emailTemplateText;
                 emailBodyBuilder.TextBody = "Plain Text goes here to avoid marked as spam for some email servers.";
-
                 emailMessage.Body = emailBodyBuilder.ToMessageBody();
-
                 using (SmtpClient mailClient = new SmtpClient())
                 {
                     mailClient.Connect(_mailSettings.Server, _mailSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);

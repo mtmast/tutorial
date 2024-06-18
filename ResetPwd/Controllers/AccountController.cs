@@ -3,7 +3,6 @@ using EmailService.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using ResetPwd.Models;
-using System.Diagnostics;
 using System.Security.Claims;
 
 namespace ResetPwd.Controllers
@@ -21,20 +20,14 @@ namespace ResetPwd.Controllers
         {
             if (User.Identity != null && User.Identity.IsAuthenticated) return RedirectToAction("Index", "Home");
 
-            var cookieOptions = new CookieOptions
-            {
-                Expires = DateTime.Now.AddMinutes(30) // Set the cookie to expire in 30 minutes
-            };
-
             if (string.IsNullOrEmpty(Request.Cookies["email"]))
             {
-                Response.Cookies.Append("Email", "test@gmail.com", cookieOptions);
-                Response.Cookies.Append("Password", "123", cookieOptions);
+                Response.Cookies.Append("Email", "test@gmail.com");
+                Response.Cookies.Append("Password", "123");
             }
 
             return View();
         }
-
         // POST: AccountController/Login
         [HttpPost]
         public async Task<ActionResult> Login(String Email, String password)
@@ -49,12 +42,13 @@ namespace ResetPwd.Controllers
 
                 string CookieEmail = Request.Cookies["Email"] ?? String.Empty;
                 string CookiePassword = Request.Cookies["Password"] ?? String.Empty;
+
                 if (Email == CookieEmail && password == CookiePassword)
                 {
                     List<Claim> Claims = new List<Claim>
-                {
+                    {
                     new Claim(ClaimTypes.Name, Email)
-                };
+                    };
                     var ClaimsIdentity = new ClaimsIdentity(Claims, "CookieAuth");
                     var AuthProperties = new AuthenticationProperties
                     {
@@ -74,14 +68,12 @@ namespace ResetPwd.Controllers
             }
 
         }
-
         // GET: AccountController/Forgot
         public ActionResult Forgot()
         {
             if (User.Identity != null && User.Identity.IsAuthenticated) return RedirectToAction("Index", "Home");
             return View();
         }
-
         // POST: AccountController/Forgot -- SendEmail
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -128,8 +120,7 @@ namespace ResetPwd.Controllers
                     TempData["Message"] = "Sorry, Service is currently not available";
                     TempData["Status"] = 1;
                     return View();
-                }
-                
+                }  
             }
             else
             {
@@ -152,7 +143,6 @@ namespace ResetPwd.Controllers
                 return RedirectToAction("LinkExpired");
             }
 
-
             var model = new ResetPasswordViewModel
             {
                 Token = token,
@@ -163,7 +153,6 @@ namespace ResetPwd.Controllers
 
             return View(model);
         }
-
         // Reset Password
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -176,7 +165,6 @@ namespace ResetPwd.Controllers
             {
                 return RedirectToAction("LinkExpired");
             }
-
 
             if (ModelState.IsValid)
             {
@@ -207,13 +195,11 @@ namespace ResetPwd.Controllers
             }
 
         }
-
         // GET : AccountController/LinkExpired
         public ActionResult LinkExpired()
         {
             return View();
         }
-
         // GET: AccountController/Logout
         public async Task<ActionResult> Logout()
         {
