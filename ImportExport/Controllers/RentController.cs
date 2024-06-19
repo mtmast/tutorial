@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 
@@ -16,7 +17,6 @@ namespace ImportExport.Controllers
     public class RentController : Controller
     {
         public static string FolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-        // GET: RentController
         public async Task<ActionResult> Index()
         {
             List<VwCusMvRent> vwCusMvRent = new List<VwCusMvRent>();
@@ -26,20 +26,6 @@ namespace ImportExport.Controllers
             }
             return View(vwCusMvRent);
         }
-
-        // GET: RentController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: RentController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: RentController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(IFormCollection collection)
@@ -53,12 +39,9 @@ namespace ImportExport.Controllers
                 return View();
             }
         }
-
-        // POST: RentController/SingleFileUpload
         [HttpPost]
         public async Task<ActionResult> SingleFileUpload(IFormFile SingleFile)
         {
-         
             if (ModelState.IsValid)
             {
                 if (SingleFile != null && SingleFile.Length > 0) // File Payload has or not
@@ -75,19 +58,16 @@ namespace ImportExport.Controllers
                         {
                             Directory.CreateDirectory(FolderPath);
                         }
-
                         var FilePath = Path.Combine(FolderPath, SingleFile.FileName);
                         if (System.IO.File.Exists(FilePath))
                         {
-                            TempData["MessageType"] = "fail";
-                            TempData["Message"] = "Your File is Already Exist";
-                            return RedirectToAction(nameof(Index)); // Return to the view with the error message
+                            var datetimePrefix = DateTime.Now.ToString("yyyyMMddHHmmss");
+                            FilePath = Path.Combine(FolderPath, $"{datetimePrefix}_{SingleFile.FileName}");
                         }
                         using (var streams = System.IO.File.Create(FilePath))
                         {
                             await SingleFile.CopyToAsync(streams);
                         }
-
                         // import to database from xlsx or csv
                         var stream = SingleFile.OpenReadStream();
                         MessageService messages = new MessageService();
@@ -102,15 +82,11 @@ namespace ImportExport.Controllers
                             TempData["MessageType"] = messages.MessageType;
                             TempData["Message"] = messages.Message;
                             return RedirectToAction(nameof(Index));
-
                         }
                         catch (Exception e)
                         {
-                            messages = new MessageService
-                            {
-                                Message = "fail",
-                                MessageType = "Something went wrong",
-                            };
+                            Debug.WriteLine(e.Message);
+                            return RedirectToAction(nameof(Index));
                         }
                     }
                 }
@@ -129,43 +105,41 @@ namespace ImportExport.Controllers
             TblCustomer? customers;
             TblRent? renters;
             int FalseDataCount = 0;
-            int realDataCount = 0;
+            int ActualDataCount = 0;
             using (var package = new ExcelPackage(stream))
             {
                 var worksheet = package.Workbook.Worksheets.First();
                 var rowCount = worksheet.Dimension.Rows;
-
+                Debug.WriteLine("Row Count-------------------------------"+ rowCount);
                 for (var row = 2; row <= rowCount; row++)
                 {
                     TemporaryId = TemporaryId + row;
-                    realDataCount++;
+                    ActualDataCount++;
                     try
                     {
                         string? movieTitle = worksheet?.Cells[row, 3].Value?.ToString() ??  string.Empty;
                         customers = new TblCustomer
                         {
                             CusId = TemporaryId,
-                            FullName = worksheet?.Cells[row, 1].Value?.ToString(),
-                            Salutation = worksheet?.Cells[row, 4].Value?.ToString(),
-                            Address = worksheet?.Cells[row, 2].Value?.ToString(),
+                            FullName = worksheet?.Cells[row, 1].Value?.ToString() ?? string.Empty,
+                            Salutation = worksheet?.Cells[row, 4].Value?.ToString() ?? string.Empty,
+                            Address = worksheet?.Cells[row, 2].Value?.ToString() ?? string.Empty,
                             CreatedAt = DateTime.Now
                         };
+
                         using (var context = new DBContext())
                         {
-                            int movieId = await context.TblMovies
-                                            .Where(c => c.Title == movieTitle)
-                                            .Select(d => d.MvId)
-                                            .FirstOrDefaultAsync();
-                            if (movieId > 0)
+                            int MovieId = await IsMovieExist(movieTitle, context);
+                            Debug.WriteLine("ksdadfksal;sdfskf------------" + MovieId);
+                            if (MovieId != 0)
                             {
                                 renters = new TblRent
                                 {
                                     RentId = TemporaryId,
                                     CusId = TemporaryId,
-                                    MvId = movieId,
+                                    MvId = MovieId,
                                     RentAt = DateTime.Now
                                 };
-
                                 context.Add(customers);
                                 context.Add(renters);
                                 await context.SaveChangesAsync();
@@ -174,35 +148,16 @@ namespace ImportExport.Controllers
                             {
                                 FalseDataCount++;
                             }
-                          
                         }
                     }
                     catch (Exception ex)
                     {
-                        result = new MessageService
-                        {
-                            MessageType = "fail",
-                            Message = $"Something went wrong !",
-                        };
+                        Debug.WriteLine(ex.Message);
+                        result = GenerateErrorMessage("fail", "Something went wrong!");
                         return result;
                     }
                 }
-                if (FalseDataCount > 0)
-                {
-                    result = new MessageService
-                    {
-                        MessageType = "info",
-                        Message = $"{FalseDataCount} of {realDataCount + FalseDataCount} row cannot Imported, Beacause Of Incorrect Data",
-                    };
-                }
-                else
-                {
-                    result = new MessageService
-                    {
-                        MessageType = "success",
-                        Message = $"{realDataCount} row was Successfully Imported",
-                    };
-                }
+                result = GenerateResultMessage(ActualDataCount, FalseDataCount);
                 return result;
             }
         }
@@ -213,7 +168,7 @@ namespace ImportExport.Controllers
             TblCustomer? customers;
             TblRent? renters;
             int FalseDataCount = 0;
-            int realDataCount = 0;
+            int ActualDataCount = 0;
             using (var reader = new StreamReader(stream))
             {
                 int LineNumber = 0;
@@ -221,7 +176,6 @@ namespace ImportExport.Controllers
                 {
                     LineNumber++;
                     var line = await reader.ReadLineAsync();
-
                     if (LineNumber == 1)
                     {
                         continue;
@@ -229,32 +183,28 @@ namespace ImportExport.Controllers
                     var values = line?.Split(',');
 
                     TemporaryId = Convert.ToInt32(DateTime.Now.Ticks % 100000000) + LineNumber;
-                    realDataCount++;
+                    ActualDataCount++;
                     try
                     {
                         string? movieTitle = values?[2] ?? string.Empty;
-
                         customers = new TblCustomer
                         {
                             CusId = TemporaryId,
-                            FullName = values?[0],
-                            Salutation = values?[3],
-                            Address = values?[1],
+                            FullName = values?[0] ?? string.Empty,
+                            Salutation = values?[3] ?? string.Empty,
+                            Address = values?[1] ?? string.Empty,
                             CreatedAt = DateTime.Now
                         };
                         using (var context = new DBContext())
                         {
-                            int movieId = await context.TblMovies
-                                            .Where(c => c.Title == movieTitle)
-                                            .Select(d => d.MvId)
-                                            .FirstOrDefaultAsync();
-                            if (movieId > 0)
+                            int MovieId = await IsMovieExist(movieTitle, context);
+                            if (MovieId != 0)
                             {
                                 renters = new TblRent
                                 {
                                     RentId = TemporaryId,
                                     CusId = TemporaryId,
-                                    MvId = movieId,
+                                    MvId = MovieId,
                                     RentAt = DateTime.Now
                                 };
 
@@ -270,35 +220,15 @@ namespace ImportExport.Controllers
                     }
                     catch (Exception ex)
                     {
-                        result = new MessageService
-                        {
-                            MessageType = "fail",
-                            Message = $"Something went wrong !",
-                        };
+                        Debug.WriteLine(ex.Message);
+                        result = GenerateErrorMessage("fail", "Somethins went wrong !");
                         return result;
                     }
                 }
-                if (FalseDataCount > 0)
-                {
-                    result = new MessageService
-                    {
-                        MessageType = "info",
-                        Message = $"{FalseDataCount} of {realDataCount + FalseDataCount} row cannot Imported, Beacause Of Incorrect Data",
-                    };
-                }
-                else
-                {
-                    result = new MessageService
-                    {
-                        MessageType = "success",
-                        Message = $"{realDataCount} row was Successfully Imported",
-                    };
-                }
+                result = GenerateResultMessage(ActualDataCount, FalseDataCount);
                 return result;
             }
         }
-
-
         // GET: RentController/XlsxExport
         public async Task<ActionResult> XlsxExport(string name = "RentedCustomer")
         {
@@ -315,8 +245,8 @@ namespace ImportExport.Controllers
                 var namedStyle = xlPackage.Workbook.Styles.CreateNamedStyle("HyperLink");
                 namedStyle.Style.Font.UnderLine = true;
                 namedStyle.Style.Font.Color.SetColor(Color.Blue);
-                const int startRow = 1;
-                var row = startRow;
+                const int StartRow = 1;
+                var row = StartRow;
 
                 worksheet.Cells["A1"].Value = "Full Name";
                 worksheet.Cells["B1"].Value = "Address";
@@ -345,7 +275,6 @@ namespace ImportExport.Controllers
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", name+".xlsx");
          
         }
-
         // GET: RentController/CsvExport
         public async Task<ActionResult> CsvExport(string name = "RentedCustomer")
         {
@@ -377,30 +306,6 @@ namespace ImportExport.Controllers
 
             return File(stream, contentType, fileName);
         }
-    
-
-
-        // GET: RentController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: RentController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
         // GET: RentController/Delete/5
         public async Task<ActionResult> Delete(int id)
         {
@@ -418,5 +323,48 @@ namespace ImportExport.Controllers
             TempData["Message"] = "Deteted Successfully";
             return RedirectToAction(nameof(Index));
         }
-    }
+        // Generate Result Message For Toast
+        private static MessageService GenerateResultMessage(int ActualDataCount, int FalseDataCount)
+        {
+            if (FalseDataCount > 0)
+            {
+                return new MessageService
+                {
+                    MessageType = "info",
+                    Message = $"{FalseDataCount} of {ActualDataCount} row(s) could not be imported due to incorrect data."
+                };
+            }
+            else
+            {
+                return new MessageService
+                {
+                    MessageType = "success",
+                    Message = $"{ActualDataCount- FalseDataCount} row(s) were successfully imported."
+                };
+            }
+        }
+        //  Generate  Error Message 
+        private static MessageService GenerateErrorMessage(string MessageType, string Message)
+        {
+            return new MessageService
+            {
+                MessageType = "fail",
+                Message = "Something Went Wrong"
+            };
+        }
+        // Movie Exit Or Not
+        private static async Task<int> IsMovieExist(String? MovieTitle, DBContext context)
+        {
+            int MovieId;
+            if (MovieTitle == null)
+            {
+                return 0;
+            }
+            MovieId = await context.TblMovies
+                        .Where(c => c.Title == MovieTitle)
+                        .Select(d => d.MvId)
+                        .FirstOrDefaultAsync();
+            return MovieId > 0 ? MovieId : 0;
+        }
+     }
 }

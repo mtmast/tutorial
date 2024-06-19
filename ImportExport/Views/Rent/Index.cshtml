@@ -64,17 +64,12 @@
             </div>
             <div class="modal-body">
                 <form method="post" id="uploadForm" asp-controller="Rent" asp-action="SingleFileUpload" enctype="multipart/form-data">
-
                     <dl>
                         <dt>
-                            <!-- <label asp-for="FileUpload.FormFile" class="form-label">Please Upload File ( .csv, .xlsx )</label>-->
                             <label for="formFile" class="form-label">Please Upload File ( .csv, .xlsx )</label>
                         </dt>
                         <dd>
-
-                            <!--<input asp-for="FileUpload.FormFile" type="file">-->
                             <input class="form-control" type="file" name="SingleFile" id="formFile" accept=".xlsx,.csv">
-                            <!--<span asp-validation-for="FileUpload.FormFile"></span>-->
                             <div asp-validation-summary="All" class="text-danger err-msg"></div>
                         </dd>
                     </dl>
@@ -140,7 +135,6 @@
                 $("#export-btn").click(function(){
                      let format = $( "#select-format" ).val();
                      let filename = $("#file-name").val() || "";
-                     console.log("format", format);
                      switch(format){
                                 case 'csv' :
                                     window.location.href = '@Url.Action("CsvExport")' + '?name=' + encodeURIComponent(filename);
